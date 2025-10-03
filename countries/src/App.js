@@ -21,7 +21,7 @@ function App() {
       setCountries(data);
     } catch (err) {
       setError(err.message);
-      console.error("Failed to fetch countries:", err);
+      console.error(`Error fetching data: ${err.message}`);
     } finally {
       setLoading(false);
     }
