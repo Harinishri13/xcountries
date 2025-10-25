@@ -33,14 +33,14 @@
   font-size: 14px;
 }
 
-.countries-grid {
+.countries-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 20px;
   justify-items: center;
 }
 
-.country-card {
+.countryCard {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -54,12 +54,12 @@
   max-width: 160px;
 }
 
-.country-card:hover {
+.countryCard:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.country-card img {
+.country-flag {
   margin-bottom: 12px;
   border-radius: 4px;
   width: 100px;
@@ -68,14 +68,10 @@
   border: 1px solid #f0f0f0;
 }
 
-.country-card p {
-  margin: 0 0 5px 0;
+.country-name {
+  margin: 0;
   font-weight: 500;
   font-size: 14px;
   color: #333;
   line-height: 1.2;
-}
-
-.country-card small {
-  color: #999;
 }
