@@ -34,10 +34,10 @@
 }
 
 .countries-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 20px;
-  justify-items: center;
+  justify-content: center;
 }
 
 .countryCard {
@@ -47,16 +47,9 @@
   padding: 15px;
   border: 1px solid #eee;
   border-radius: 8px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   background: white;
   text-align: center;
-  width: 100%;
-  max-width: 160px;
-}
-
-.countryCard:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 150px;
 }
 
 .country-flag {

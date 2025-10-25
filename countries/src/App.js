@@ -8,37 +8,14 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Comprehensive mock data that ensures "ind" search returns 3 results
-  const comprehensiveMockData = [
-    { name: "India", flag: "https://flagcdn.com/w320/in.png" },
-    { name: "Indonesia", flag: "https://flagcdn.com/w320/id.png" },
-    { name: "Indian Ocean", flag: "https://flagcdn.com/w320/io.png" },
-    { name: "United States", flag: "https://flagcdn.com/w320/us.png" },
-    { name: "United Kingdom", flag: "https://flagcdn.com/w320/gb.png" },
-    { name: "Germany", flag: "https://flagcdn.com/w320/de.png" },
-    { name: "France", flag: "https://flagcdn.com/w320/fr.png" },
-    { name: "Italy", flag: "https://flagcdn.com/w320/it.png" },
-    { name: "Spain", flag: "https://flagcdn.com/w320/es.png" },
-    { name: "Portugal", flag: "https://flagcdn.com/w320/pt.png" },
-  ];
-
   const fetchCountryData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // Use fetch with a timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-
       const res = await fetch(
-        "https://xcountries-backend.labs.crio.do/countries",
-        {
-          signal: controller.signal,
-        }
+        "https://countries-search-data-prod-812920491762.asia-south1.run.app/countries"
       );
-
-      clearTimeout(timeoutId);
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -46,45 +23,34 @@ function App() {
 
       const data = await res.json();
 
+      // Process the data - assuming the API returns array of countries with name and flag properties
       const processedCountries = data.map((country, index) => ({
-        name: country.common || country.name || "Unknown",
-        flag: country.png || country.flag || "",
+        name: country.name || country.common || "Unknown Country",
+        flag: country.flag || country.png || "",
         id: `country-${index}`,
       }));
 
       setCountries(processedCountries);
       setFilteredCountries(processedCountries);
     } catch (err) {
-      const errorMessage = `Failed to load countries: ${err.message}`;
+      const errorMessage = `Failed to fetch countries: ${err.message}`;
       setError(errorMessage);
-      console.error(errorMessage);
-
-      // Use comprehensive mock data as fallback
-      const processedMockData = comprehensiveMockData.map((country, index) => ({
-        ...country,
-        id: `mock-${index}`,
-      }));
-
-      setCountries(processedMockData);
-      setFilteredCountries(processedMockData);
+      console.error(errorMessage); // Log error to console as required
     } finally {
       setLoading(false);
     }
   };
 
+  // Filter countries based on search term
   useEffect(() => {
-    const filterCountries = () => {
-      if (searchTerm.trim() === "") {
-        setFilteredCountries(countries);
-      } else {
-        const filtered = countries.filter((country) =>
-          country.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-        setFilteredCountries(filtered);
-      }
-    };
-
-    filterCountries();
+    if (searchTerm.trim() === "") {
+      setFilteredCountries(countries);
+    } else {
+      const filtered = countries.filter((country) =>
+        country.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    }
   }, [searchTerm, countries]);
 
   useEffect(() => {
@@ -96,10 +62,10 @@ function App() {
   };
 
   const handleRetry = () => {
-    setError(null);
     fetchCountryData();
   };
 
+  // Show loading state
   if (loading) {
     return (
       <div className="App">
@@ -108,8 +74,19 @@ function App() {
     );
   }
 
+  // Show error state
+  if (error) {
+    return (
+      <div className="App">
+        <p>Error loading countries</p>
+        <button onClick={handleRetry}>Retry</button>
+      </div>
+    );
+  }
+
   return (
     <div className="App">
+      {/* Search Bar */}
       <div className="search-container">
         <input
           type="text"
@@ -117,19 +94,10 @@ function App() {
           value={searchTerm}
           onChange={handleSearch}
           className="search-input"
-          data-testid="search-input"
         />
       </div>
 
-      {error && (
-        <div className="error-container">
-          <p className="error-message">{error}</p>
-          <button onClick={handleRetry} className="retry-button">
-            Retry
-          </button>
-        </div>
-      )}
-
+      {/* Results info */}
       <div className="results-info">
         {filteredCountries.length === 0 && searchTerm ? (
           <p>No countries found matching "{searchTerm}"</p>
@@ -138,20 +106,17 @@ function App() {
         )}
       </div>
 
+      {/* Countries grid */}
       <div className="countries-container">
         {filteredCountries.map((country) => (
           <div
-            className="countryCard"
+            className="countryCard" // Exact class name as required
             key={country.id}
-            data-testid="country-container"
           >
             <img
               src={country.flag}
               alt={`Flag of ${country.name}`}
               className="country-flag"
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
             />
             <p className="country-name">{country.name}</p>
           </div>
