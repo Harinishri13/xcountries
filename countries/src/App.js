@@ -8,35 +8,48 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Fetch country data (using the same API)
   const fetchCountryData = async () => {
     try {
       setLoading(true);
       setError(null);
 
       const res = await fetch("https://xcountries-backend.labs.crio.do/all");
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
 
       const data = await res.json();
 
-      // ✅ Correctly extract fields from API response
-      const validCountries = data.map((country, index) => ({
-        id: `${country.name?.common?.replace(/\s+/g, "-")}-${index}`,
-        name: country.name?.common || "Unknown",
-        flag: country.flags?.png || "",
-      }));
+      // Process the data - handle both possible API response structures
+      const validCountries = data
+        .filter((country) => country && (country.common || country.name))
+        .map((country, index) => {
+          const countryName = country.common || country.name;
+          const flagUrl = country.png || country.flag;
+
+          return {
+            ...country,
+            name: countryName,
+            flag: flagUrl,
+            id:
+              `${countryName?.replace(/\s+/g, "-")}-${index}` ||
+              `country-${index}`,
+          };
+        });
 
       setCountries(validCountries);
       setFilteredCountries(validCountries);
     } catch (err) {
-      console.error("Error fetching data", err); // ✅ For test visibility
-      setError("Error fetching data"); // ✅ Simple message expected by tests
+      const errorMessage = `Error fetching data: ${err.message}`;
+      setError(errorMessage);
+      console.error(errorMessage); // Ensure error is logged to console for tests
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Handle search filtering
+  // Filter countries based on search term
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setFilteredCountries(countries);
@@ -48,7 +61,6 @@ function App() {
     }
   }, [searchTerm, countries]);
 
-  // ✅ Fetch data on mount
   useEffect(() => {
     fetchCountryData();
   }, []);
@@ -61,7 +73,7 @@ function App() {
     fetchCountryData();
   };
 
-  // ✅ Loading state
+  // Show loading state
   if (loading) {
     return (
       <div className="App">
@@ -70,7 +82,7 @@ function App() {
     );
   }
 
-  // ✅ Error state
+  // Show error state
   if (error) {
     return (
       <div className="App">
@@ -82,7 +94,7 @@ function App() {
 
   return (
     <div className="App">
-      {/* ✅ Search Input */}
+      {/* Search Bar - Ensure it has the correct attributes for tests */}
       <div className="search-container">
         <input
           type="text"
@@ -94,7 +106,7 @@ function App() {
         />
       </div>
 
-      {/* ✅ Results Info */}
+      {/* Results count */}
       <div className="results-info">
         {filteredCountries.length === 0 && searchTerm ? (
           <p>No countries found matching "{searchTerm}"</p>
@@ -103,8 +115,8 @@ function App() {
         )}
       </div>
 
-      {/* ✅ Country Grid */}
-      <div className="countries-grid" data-testid="countries-grid">
+      {/* Countries grid - Ensure proper structure for tests */}
+      <div className="countries-grid">
         {filteredCountries.map((country) => (
           <div
             className="country-card"
@@ -118,6 +130,7 @@ function App() {
               height={60}
               style={{ objectFit: "cover" }}
               onError={(e) => {
+                // Fallback for broken images
                 e.target.src =
                   "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjYwIiB2aWV3Qm94PSIwIDAgMTAwIDYwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iNjAiIGZpbGw9IiNlMWUxZTEiLz48dGV4dCB4PSI1MCIgeT0iMzAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkZsYWcgbm90IGZvdW5kPC90ZXh0Pjwvc3ZnPg=";
               }}
